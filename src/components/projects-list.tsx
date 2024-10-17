@@ -16,6 +16,7 @@ import React from "react";
 import { z } from "zod";
 import CreateProjectDialog from "./create-project-form";
 import { Project } from "@/lib/schema";
+import Link from "next/link";
 
 const ProjectsList: React.FC<{ guilds: Guild[] }> = ({ guilds }) => {
   const { data: myProjects } = useQuery({
@@ -45,12 +46,12 @@ const ProjectsList: React.FC<{ guilds: Guild[] }> = ({ guilds }) => {
     <div className="grid grid-cols-6 gap-2">
       {myProjects ? (
         myProjects.map((project) => (
-          <div key={project.id}>
+          <Link key={project.id} href={`projects/${project.id}`}>
             <ProjectCard
               project={project}
               guild={guilds.find((guild) => guild.id === project.serverId)}
             />
-          </div>
+          </Link>
         ))
       ) : (
         <div className="w-56">
@@ -66,7 +67,7 @@ const ProjectCard: React.FC<{ project: Project; guild?: Guild }> = ({
   guild,
 }) => {
   return (
-    <Card className="hover:shadow-lg cursor-pointer hover:bg-gray-50">
+    <Card className="hover:shadow-lg cursor-pointer hover:bg-secondary">
       <CardHeader>
         <CardTitle>{project.name}</CardTitle>
       </CardHeader>

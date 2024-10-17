@@ -15,6 +15,12 @@ export const GuildSchema = z.object({
 
 export type Guild = z.infer<typeof GuildSchema>;
 
+/**
+ * Get the guilds of a user from cache
+ * @param token The user's Discord token
+ * @param userId The user's Discord ID
+ * @returns The user's guilds from cache
+ */
 const getUsersGuildsFromCache = (
   userId: string
 ): ResultAsync<Guild[], Error> => {
@@ -31,6 +37,11 @@ const getUsersGuildsFromCache = (
   });
 };
 
+/**
+  * Get the guilds of a user from Discord
+  * @param token The user's Discord token
+  * @returns The user's guilds from Discord
+ */
 const getUsersGuildsRequest = (token: string): ResultAsync<Guild[], Error> => {
   return ResultAsync.fromPromise(
     fetch("https://discord.com/api/users/@me/guilds", {
@@ -57,6 +68,12 @@ const getUsersGuildsRequest = (token: string): ResultAsync<Guild[], Error> => {
     });
 };
 
+/**
+ * Get the guilds of a user from cache or from Discord if not found in cache
+ * @param token The user's Discord token
+ * @param userId The user's Discord ID
+ * @returns The user's guilds
+ */
 export const getUsersGuilds = (
   token: string,
   userId: string
@@ -71,5 +88,11 @@ export const getUsersGuilds = (
   );
 };
 
-export const makeIconUrl = (guild: Guild, size: number) =>
+/**
+ * Make an icon URL for a guild
+ * @param guild The guild
+ * @param size The size of the icon
+ * @returns The icon URL
+ */
+export const makeGuildIconUrl = (guild: Guild, size: number) =>
   `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=${size}`;

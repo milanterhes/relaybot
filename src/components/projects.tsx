@@ -1,7 +1,7 @@
 "use server";
 
 import { Button } from "@/components/ui/button";
-import { getAccount, getMyProjects } from "@/lib/data-access";
+import { AccountsDA, ProjectsDA } from "@/lib/data-access";
 import authOptions from "@/lib/auth-options";
 import { getUsersGuilds } from "@/lib/discord";
 import {
@@ -22,7 +22,7 @@ const Projects = async () => {
     return <div>Please log in</div>;
   }
 
-  const account = await getAccount(session.user.id);
+  const account = await AccountsDA.getOneByUserId(session.user.id);
 
   if (account.isErr()) {
     console.error(account.error);
@@ -44,7 +44,7 @@ const Projects = async () => {
     return <div>Failed to fetch guilds</div>;
   }
 
-  const myProjects = await getMyProjects(session.user.id);
+  const myProjects = await ProjectsDA.getAllByUserId(session.user.id);
 
   if (myProjects.isErr()) {
     console.error(myProjects.error);

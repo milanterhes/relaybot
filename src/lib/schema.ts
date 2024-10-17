@@ -108,5 +108,20 @@ export const projects = sqliteTable("project", {
   updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
 });
 
+export const scheduledPosts = sqliteTable("scheduledPost", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  projectId: text("projectId")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  scheduledAt: integer("scheduledAt", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+});
+
 export type Project = InferSelectModel<typeof projects>;
 export type ProjectValues = InferInsertModel<typeof projects>;
+export type ScheduledPost = InferSelectModel<typeof scheduledPosts>;
+export type SchedulePostValues = InferInsertModel<typeof scheduledPosts>;

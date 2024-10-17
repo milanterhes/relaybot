@@ -4,6 +4,7 @@ import NextAuthProvider from "../components/session-provider";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClientProviderWrapper } from "./query-client";
+import Navbar from "@/components/navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,12 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryClientProviderWrapper>
           <NextAuthProvider>
+            <Navbar />
             {children}
             <Toaster />
           </NextAuthProvider>

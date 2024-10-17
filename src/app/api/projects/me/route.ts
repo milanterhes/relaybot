@@ -1,5 +1,5 @@
 import authOptions from "@/lib/auth-options";
-import { getAccount, getMyProjects } from "@/lib/data-access";
+import { AccountsDA, ProjectsDA } from "@/lib/data-access";
 import { getUsersGuilds } from "@/lib/discord";
 import { getServerSession } from "next-auth";
 
@@ -9,7 +9,7 @@ export async function GET() {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const account = await getAccount(session.user.id);
+  const account = await AccountsDA.getOneByUserId(session.user.id);
 
   if (account.isErr()) {
     console.error(account.error);
@@ -31,7 +31,7 @@ export async function GET() {
     return new Response("Failed to fetch guilds", { status: 500 });
   }
 
-  const myProjects = await getMyProjects(session.user.id);
+  const myProjects = await ProjectsDA.getAllByUserId(session.user.id);
 
   if (myProjects.isErr()) {
     console.error(myProjects.error);

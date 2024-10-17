@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Guild, makeIconUrl } from "@/lib/discord";
+import { Guild, makeGuildIconUrl } from "@/lib/discord";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "next-safe-action/hooks";
 import Image from "next/image";
@@ -47,21 +47,23 @@ const createProjectFormSchema = z.object({
 
 const CreateProjectDialog: React.FC<PropsWithChildren<{ guilds: Guild[] }>> = ({
   children,
-  guilds, // TODO: fix prop drilling
+  guilds, // TODO: fix prop drilling for guilds
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
+
   const { execute, isPending } = useAction(makeProject, {
     onError: (error) => {
       toast.error(error.error.serverError);
     },
     onSuccess: () => {
-      setIsOpen(false);
       toast.success("Project created");
       queryClient.invalidateQueries({
         exact: true,
         queryKey: ["my-projects"],
       });
+      form.reset();
+      setIsOpen(false);
     },
   });
 
@@ -72,8 +74,6 @@ const CreateProjectDialog: React.FC<PropsWithChildren<{ guilds: Guild[] }>> = ({
   function onSubmit(values: z.infer<typeof createProjectFormSchema>) {
     execute(values);
   }
-
-  console.log(isOpen);
 
   return (
     <Dialog open={isOpen} onOpenChange={(newState) => setIsOpen(newState)}>
@@ -150,7 +150,7 @@ const CreateProjectDialog: React.FC<PropsWithChildren<{ guilds: Guild[] }>> = ({
                             <div className="flex items-center">
                               {guild.icon ? (
                                 <Image
-                                  src={makeIconUrl(guild, 24)}
+                                  src={makeGuildIconUrl(guild, 24)}
                                   alt="Server icon"
                                   width={24}
                                   height={24}
