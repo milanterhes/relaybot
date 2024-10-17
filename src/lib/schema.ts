@@ -1,13 +1,13 @@
+import { createClient } from "@libsql/client/web";
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
 import {
   integer,
+  primaryKey,
   sqliteTable,
   text,
-  primaryKey,
 } from "drizzle-orm/sqlite-core";
-import { createClient } from "@libsql/client/web";
-import { drizzle } from "drizzle-orm/libsql";
 import type { AdapterAccount } from "next-auth/adapters";
-import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 const client = createClient({
   url: process.env.DATABASE_URL || "sqlite://:memory:",

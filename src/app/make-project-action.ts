@@ -18,16 +18,17 @@ const findProjectByServerId = (serverId: string) =>
     (error) => new Error(`Failed to find project by serverId: ${error}`)
   );
 
-const createProject = (values: ProjectValues) => findProjectByServerId(values.serverId).andThen((project) => {
-  if (project.length > 0) {
-    return err(new Error("Project for this server already exists"));
-  }
+const createProject = (values: ProjectValues) =>
+  findProjectByServerId(values.serverId).andThen((project) => {
+    if (project.length > 0) {
+      return err(new Error("Project for this server already exists"));
+    }
 
-  return ResultAsync.fromPromise(
-    db.insert(projects).values(values),
-    (error) => new Error(`Failed to create project: ${error}`)
-  );
-});
+    return ResultAsync.fromPromise(
+      db.insert(projects).values(values),
+      (error) => new Error(`Failed to create project: ${error}`)
+    );
+  });
 
 export const makeProject = authenticatedAction
   .schema(schema)

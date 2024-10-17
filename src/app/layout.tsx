@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import NextAuthProvider from "../components/session-provider";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
+import { QueryClientProviderWrapper } from "./query-client";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,11 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextAuthProvider>
-          {children}
-          <Toaster />
-        </NextAuthProvider>
-
+        <QueryClientProviderWrapper>
+          <NextAuthProvider>
+            {children}
+            <Toaster />
+          </NextAuthProvider>
+        </QueryClientProviderWrapper>
       </body>
     </html>
   );
