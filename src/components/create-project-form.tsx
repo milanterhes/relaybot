@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Guild, makeGuildIconUrl } from "@/lib/discord";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import Image from "next/image";
 import React, { PropsWithChildren, useState } from "react";
@@ -36,8 +38,6 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
-import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 
 const createProjectFormSchema = z.object({
   name: z.string().min(3),

@@ -6,6 +6,7 @@ import { DateTimePicker } from "./ui/datetime-picker"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { Textarea } from './ui/textarea'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 const createScheduledPostSchema = z.object({
     content: z.string().min(3),
@@ -17,7 +18,8 @@ const CreateScheduledPostForm: React.FC<PropsWithChildren> = ({ children }) => {
         defaultValues: {
             content: "",
             scheduledAt: new Date()
-        }
+        },
+        resolver: zodResolver(createScheduledPostSchema),
     })
     const [isOpen, setIsOpen] = useState(false);
 

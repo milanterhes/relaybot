@@ -1,12 +1,11 @@
 "use client";
-import { addDays, isSameDay, startOfWeek } from 'date-fns';
-import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { addWeeks, format, subWeeks } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, TriangleAlert, Unplug } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { addDays, addWeeks, format, isSameDay, startOfWeek, subWeeks } from 'date-fns';
+import { ChevronLeft, ChevronRight, Plus, Unplug } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 import CreateScheduledPostForm from './create-schedule-post-form';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 
 type ScheduledPost = {
     content: string
@@ -59,7 +58,7 @@ const WeekSelector: React.FC<{ onWeekStartChange: (newWeekStart: Date) => void; 
 const WeeklySchedule = () => {
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date()))
     const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i)), [currentWeekStart])
-    const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>(examplePosts)
+    const [scheduledPosts] = useState<ScheduledPost[]>(examplePosts)
     return (
         <div>
             <div className="flex items-center gap-2 py-4">
