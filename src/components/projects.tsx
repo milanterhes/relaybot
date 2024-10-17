@@ -1,3 +1,5 @@
+"use server";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -50,13 +52,11 @@ const Projects = async () => {
     return <div>Please log in</div>;
   }
 
-  const guilds = await getUsersGuilds(account[0].access_token);
+  const guilds = await getUsersGuilds(`Bearer ${account[0].access_token}`);
 
   if (guilds.isErr()) {
     return <div>Failed to fetch guilds</div>;
   }
-
-  console.log(guilds.value[0]);
 
   const myProjects = await db
     .select()

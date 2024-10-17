@@ -7,7 +7,7 @@ import {
 import { createClient } from "@libsql/client/web";
 import { drizzle } from "drizzle-orm/libsql";
 import type { AdapterAccount } from "next-auth/adapters";
-import { InferSelectModel } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 const client = createClient({
   url: process.env.DATABASE_URL || "sqlite://:memory:",
@@ -111,3 +111,4 @@ export const projects = sqliteTable("project", {
 });
 
 export type Project = InferSelectModel<typeof projects>;
+export type ProjectValues = InferInsertModel<typeof projects>;

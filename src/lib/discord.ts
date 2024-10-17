@@ -18,7 +18,7 @@ export const getUsersGuilds = async (token: string) =>
   ResultAsync.fromPromise(
     fetch("https://discord.com/api/users/@me/guilds", {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
     }),
     (error) => new Error(`Failed to fetch user's guilds: ${error}`)
