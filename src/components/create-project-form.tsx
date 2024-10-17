@@ -40,9 +40,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 const createProjectFormSchema = z.object({
-  name: z.string(),
+  name: z.string().min(3),
   serverId: z.string(),
-  description: z.string(),
+  description: z.string().min(3),
 });
 
 const CreateProjectDialog: React.FC<PropsWithChildren<{ guilds: Guild[] }>> = ({
