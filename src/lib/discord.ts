@@ -1,5 +1,6 @@
-import { Result, ResultAsync } from "neverthrow";
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from "neverthrow";
 import { z } from "zod";
+import { redis } from "./redis";
 
 const GuildSchema = z.object({
   id: z.string(),
@@ -14,8 +15,21 @@ const GuildSchema = z.object({
 
 export type Guild = z.infer<typeof GuildSchema>;
 
-export const getUsersGuilds = async (token: string) =>
-  ResultAsync.fromPromise(
+const getUsersGuildsFromCache = (userId: string): ResultAsync<Guild[], Error> => {
+  return ResultAsync.fromPromise(
+    redis.get<Guild[]>(`user:${userId}:guilds`),
+    (error) => new Error(`Failed to retrieve from cache: ${error}`)
+  ).andThen((guilds) => {
+    if (guilds !== null) {
+      return okAsync(guilds);
+    } else {
+      return errAsync(new Error('Guilds not found in cache'));
+    }
+  });
+};
+
+const getUsersGuildsRequest = (token: string): ResultAsync<Guild[], Error> => {
+  return ResultAsync.fromPromise(
     fetch("https://discord.com/api/users/@me/guilds", {
       headers: {
         Authorization: `${token}`,
@@ -35,6 +49,20 @@ export const getUsersGuilds = async (token: string) =>
         (error) => new Error(`Failed to parse guilds: ${error}`)
       )
     );
+};
+
+export const getUsersGuilds = (token: string, userId: string): ResultAsync<Guild[], Error> => {
+  return getUsersGuildsFromCache(userId).orElse(() =>
+    getUsersGuildsRequest(token).andTee((guilds) =>
+      ResultAsync.fromPromise(
+        redis.set(`user:${userId}:guilds`, guilds),
+        (error) => new Error(`Failed to update cache: ${error}`)
+      )
+    )
+  );
+};
+
+
 
 export const makeIconUrl = (guild: Guild, size: number) =>
   `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp?size=${size}`;

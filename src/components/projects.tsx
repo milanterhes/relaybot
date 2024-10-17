@@ -9,33 +9,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import authOptions from "@/lib/auth-options";
-import { getUsersGuilds, Guild, makeIconUrl } from "@/lib/discord";
+import { getUsersGuilds, Guild } from "@/lib/discord";
 import { accounts, db, Project, projects } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { Plus } from "lucide-react";
 import { getServerSession } from "next-auth";
-import React, { PropsWithChildren } from "react";
-import Image from "next/image";
+import React from "react";
+import CreateProjectDialog from "./create-project-form";
+import { ResultAsync } from "neverthrow";
+
+const getAccount = async (userId: string) => ResultAsync.fromPromise(
+  db.select().from(accounts).where(eq(accounts.userId, userId)),
+  (error) => new Error(`Failed to fetch account: ${error}`)
+).map((account) => account[0]);
+
+const getMyProjects = async (userId: string) => ResultAsync.fromPromise(
+  db.select().from(projects).where(eq(projects.ownerId, userId)),
+  (error) => new Error(`Failed to fetch projects: ${error}`)
+);
 
 const Projects = async () => {
   const session = await getServerSession(authOptions);
@@ -43,54 +35,73 @@ const Projects = async () => {
     return <div>Please log in</div>;
   }
 
-  const account = await db
-    .select()
-    .from(accounts)
-    .where(eq(accounts.userId, session.user.id));
+  const account = await getAccount(session.user.id);
 
-  if (!account || !account[0] || !account[0].access_token) {
-    return <div>Please log in</div>;
+  if (account.isErr()) {
+    console.error(account.error);
+    return <div>Failed to fetch account</div>;
   }
 
-  const guilds = await getUsersGuilds(`Bearer ${account[0].access_token}`);
+  if (!account.value.access_token) {
+    console.error("Access token not found for user", session.user.id);
+    return <div>Access token not found</div>;
+  }
+
+  const guilds = await getUsersGuilds(`Bearer ${account.value.access_token}`, session.user.id);
 
   if (guilds.isErr()) {
+    console.error(guilds.error);
     return <div>Failed to fetch guilds</div>;
   }
 
-  const myProjects = await db
-    .select()
-    .from(projects)
-    .where(eq(projects.ownerId, session.user.id));
+  console.log('guilds', guilds.value);
+
+  const myProjects = await getMyProjects(session.user.id);
+
+  if (myProjects.isErr()) {
+    console.error(myProjects.error);
+    return <div>Failed to fetch projects</div>;
+  }
+
   return (
-    <div>
-      <p>Projects</p>
+    <div className="py-2">
+      <div className="flex justify-between mb-2">
+        <p className="text-3xl font-bold">Projects</p>
+        <CreateProjectDialog guilds={guilds.value}>
+          <Button>
+            <Plus className="mr-2 w-4 h-4" /> New Project
+          </Button>
+        </CreateProjectDialog>
+      </div>
       <div className="grid">
-        <div className="w-56">
-          <CreateProjectCard guilds={guilds.value} />
-        </div>
-        {myProjects.map((project) => (
-          <div key={project.id} className="w-56">
-            <ProjectCard project={project} />
+        {myProjects.value.length > 0 ? (
+          myProjects.value.map((project) => (
+            <div key={project.id} className="w-56">
+              <ProjectCard project={project} guild={guilds.value.find((guild) => guild.id === project.serverId)} />
+            </div>
+          ))
+        ) : (
+          <div className="w-56">
+            <CreateProjectCard guilds={guilds.value} />
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
 };
 
-const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+const ProjectCard: React.FC<{ project: Project, guild?: Guild }> = ({ project, guild }) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{project.name}</CardTitle>
       </CardHeader>
       <CardContent>
-        <CardDescription>{project.description}</CardDescription>
+        <CardDescription>
+          <p>{project.description}</p>
+          <p>{guild?.name}</p>
+        </CardDescription>
       </CardContent>
-      <CardFooter>
-        <CardDescription>{project.ownerId}</CardDescription>
-      </CardFooter>
     </Card>
   );
 };
@@ -99,7 +110,7 @@ const CreateProjectCard: React.FC<{ guilds: Guild[] }> = ({ guilds }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>New Project</CardTitle>
+        <CardTitle>No projects</CardTitle>
       </CardHeader>
       <CardContent>
         <CardDescription>
@@ -114,66 +125,6 @@ const CreateProjectCard: React.FC<{ guilds: Guild[] }> = ({ guilds }) => {
         </CreateProjectDialog>
       </CardFooter>
     </Card>
-  );
-};
-
-const CreateProjectDialog: React.FC<PropsWithChildren<{ guilds: Guild[] }>> = ({
-  children,
-  guilds, // TODO: fix prop drilling
-}) => {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create project</DialogTitle>
-          <DialogDescription>
-            Create a new project and start scheduling messages
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" placeholder="My project" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="server" className="text-right">
-              Server
-            </Label>
-            <Select>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select the server" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {guilds.map((guild) => (
-                    <SelectItem key={guild.id} value={guild.id}>
-                      <div className="flex items-center">
-                        {guild.icon ? (
-                          <Image
-                            src={makeIconUrl(guild, 24)}
-                            alt="Server icon"
-                            width={24}
-                            height={24}
-                            className="rounded-full mr-2"
-                          />
-                        ) : null}
-                        <p>{guild.name}</p>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 };
 

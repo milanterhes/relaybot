@@ -103,9 +103,7 @@ export const projects = sqliteTable("project", {
   ownerId: text("ownerId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  hasBotJoined: integer("hasBotJoined", { mode: "boolean" })
-    .notNull()
-    .default(false),
+  serverId: text("serverId").notNull(),
   createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
 });

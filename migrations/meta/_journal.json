@@ -15,6 +15,13 @@
       "when": 1729110794457,
       "tag": "0001_wakeful_katie_power",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1729172613133,
+      "tag": "0002_sticky_sinister_six",
+      "breakpoints": true
     }
   ]
 }
